@@ -1,15 +1,5 @@
 const { buildDeclare, buildGet } = require('./builder');
 
-function canTransformMacro(path) {
-  return path.node.value.arguments.every((arg) => {
-    return (
-      arg.type === 'StringLiteral' ||
-      (arg.type === 'CallExpression' && arg.callee.name === 'raw') ||
-      arg.type === 'ArrowFunctionExpression'
-    );
-  });
-}
-
 function transformComp(path, j) {
   let arrowFunc = path.node.value.arguments[path.node.value.arguments.length - 1];
 
@@ -31,41 +21,170 @@ function transformComp(path, j) {
   path.node.value.callee = j.identifier('computed');
 }
 
-function transformConditional(path, j) {
-  let props = path.node.value.arguments.map((node) => {
-    if (node.type === 'StringLiteral') {
-      return buildGet(node.value, j);
+function reduceArgs(ctor, operator, args, transformRec, j) {
+  return args.reduce((acc, val, i, arr) => {
+    let next = arr[i + 1];
+    return next ? ctor(operator, acc, transformRec(next, j)) : acc;
+  }, transformRec(args[0], j));
+}
+
+function transformRec(node, j) {
+  let binaryOperator;
+
+  if (node.type === 'StringLiteral') {
+    return buildGet(node.value, j);
+  }
+  if (node.type === 'CallExpression') {
+    switch (node.callee.name) {
+      case 'raw':
+        return node.arguments[0];
+
+      // Boolean
+      case 'and':
+        return reduceArgs(j.logicalExpression, '&&', node.arguments, transformRec, j);
+      case 'bool':
+        return j.unaryExpression('!', j.unaryExpression('!', transformRec(node.arguments[0], j)));
+      case 'conditional':
+        return j.conditionalExpression(...node.arguments.map((arg) => transformRec(arg, j)));
+      case 'defaultTrue':
+        console.error('TODO');
+        return;
+      case 'nand':
+        return j.unaryExpression(
+          '!',
+          reduceArgs(j.logicalExpression, '&&', node.arguments, transformRec, j)
+        );
+      case 'nor':
+        return j.unaryExpression(
+          '!',
+          reduceArgs(j.logicalExpression, '||', node.arguments, transformRec, j)
+        );
+      case 'not':
+        return j.unaryExpression('!', transformRec(node.arguments[0], j));
+      case 'or':
+        return reduceArgs(j.logicalExpression, '||', node.arguments, transformRec, j);
+      case 'unless':
+        return j.conditionalExpression(
+          ...node.arguments.map((arg, i) => {
+            return i === 0 ? j.unaryExpression('!', transformRec(arg, j)) : transformRec(arg, j);
+          })
+        );
+      case 'xnor':
+        console.error('TODO');
+        return;
+      case 'xor':
+        console.error('TODO');
+        return;
+
+      // Comparison
+      case 'eq':
+      case 'equal': {
+        let [firstArg, ...args] = node.arguments;
+        return reduceArgs(
+          j.logicalExpression,
+          '&&',
+          args,
+          (arg, j) => {
+            return j.binaryExpression('===', transformRec(firstArg, j), transformRec(arg, j));
+          },
+          j
+        );
+      }
+      case 'neq':
+      case 'notEqual': {
+        let [firstArg, ...args] = node.arguments;
+        return reduceArgs(
+          j.logicalExpression,
+          '&&',
+          args,
+          (arg, j) => {
+            return j.binaryExpression('!==', transformRec(firstArg, j), transformRec(arg, j));
+          },
+          j
+        );
+      }
+      case 'gt':
+      case 'gte':
+      case 'lt':
+      case 'lte':
+        if (node.callee.name === 'lt') {
+          binaryOperator = '<';
+        }
+        if (node.callee.name === 'lte') {
+          binaryOperator = '<=';
+        }
+        if (node.callee.name === 'gt') {
+          binaryOperator = '>';
+        }
+        if (node.callee.name === 'gte') {
+          binaryOperator = '>=';
+        }
+        return j.binaryExpression(
+          binaryOperator,
+          transformRec(node.arguments[0], j),
+          transformRec(node.arguments[1], j)
+        );
+      case 'instanceOf':
+        console.error('TODO');
+        return;
+
+      // Number
+      case 'add':
+      case 'sum':
+      case 'difference':
+      case 'substract':
+      case 'divide':
+      case 'quotient':
+        if (node.callee.name === 'add' || node.callee.name === 'sum') {
+          binaryOperator = '+';
+        }
+        if (node.callee.name === 'difference' || node.callee.name === 'substract') {
+          binaryOperator = '-';
+        }
+        if (node.callee.name === 'divide' || node.callee.name === 'quotient') {
+          binaryOperator = '/';
+        }
+
+        return reduceArgs(j.binaryExpression, binaryOperator, node.arguments, transformRec, j);
     }
-    // raw value
-    return node.arguments[0];
-  });
+  }
+}
 
-  path.node.value.arguments = path.node.value.arguments.filter((node) => {
-    return node.type === 'StringLiteral';
-  });
-
-  path.node.value.arguments.push(
-    j.functionDeclaration(
-      j.identifier(''),
-      [],
-      j.blockStatement([j.returnStatement(j.conditionalExpression(...props))])
-    )
-  );
-
-  path.node.value.callee = j.identifier('computed');
+function extractMacroArguments(args) {
+  return args
+    .map((node) => {
+      if (node.type === 'CallExpression' && node.callee.name !== 'raw') {
+        return extractMacroArguments(node.arguments);
+      }
+      if (node.type === 'StringLiteral') {
+        return node;
+      }
+    })
+    .flat(Infinity)
+    .filter(function (el) {
+      return el != null;
+    });
 }
 
 function transformMacro(macroId, path, j) {
-  if (!canTransformMacro(path)) {
-    return;
+  // ember-macro-helpers
+  if (macroId === 'comp') {
+    return transformComp(path, j);
   }
 
-  switch (macroId) {
-    case 'comp':
-      return transformComp(path, j);
-    case 'conditional':
-      return transformConditional(path, j);
-  }
+  // ember-awesome-macros
+  let args = extractMacroArguments(path.node.value.arguments);
+
+  path.node.value.arguments = [
+    ...args,
+    j.functionDeclaration(
+      j.identifier(''),
+      [],
+      j.blockStatement([j.returnStatement(transformRec(path.node.value, j))])
+    ),
+  ];
+
+  path.node.value.callee = j.identifier('computed');
 }
 
 module.exports = {
