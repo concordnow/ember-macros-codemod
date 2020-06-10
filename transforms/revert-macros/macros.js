@@ -136,6 +136,8 @@ function transformRec(node, j) {
       case 'sum':
       case 'difference':
       case 'substract':
+      case 'multiply':
+      case 'product':
       case 'divide':
       case 'quotient':
         if (node.callee.name === 'add' || node.callee.name === 'sum') {
@@ -143,6 +145,9 @@ function transformRec(node, j) {
         }
         if (node.callee.name === 'difference' || node.callee.name === 'substract') {
           binaryOperator = '-';
+        }
+        if (node.callee.name === 'multiply' || node.callee.name === 'product') {
+          binaryOperator = '*';
         }
         if (node.callee.name === 'divide' || node.callee.name === 'quotient') {
           binaryOperator = '/';
