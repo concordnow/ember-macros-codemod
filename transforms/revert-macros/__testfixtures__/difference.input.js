@@ -5,4 +5,5 @@ export default Component.extend({
   prop1: difference('a', 'b'),
   prop2: substract('a', 'b'),
   prop3: difference(or('a', 'b'), 'c'),
+  prop4: difference('a', 'b', 'c'),
 });

@@ -5,4 +5,5 @@ export default Component.extend({
   prop1: multiply('a', 'b'),
   prop2: product('a', 'b'),
   prop3: multiply(or('a', 'b'), 'c'),
+  prop4: multiply('a', 'b', 'c'),
 });

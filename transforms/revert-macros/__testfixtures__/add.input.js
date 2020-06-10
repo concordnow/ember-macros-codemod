@@ -5,4 +5,5 @@ export default Component.extend({
   prop1: add('a', 'b'),
   prop2: sum('a', 'b'),
   prop3: add(or('a', 'b'), 'c'),
+  prop4: add('a', 'b', 'c'),
 });
