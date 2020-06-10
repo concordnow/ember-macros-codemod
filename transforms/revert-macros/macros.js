@@ -34,6 +34,9 @@ function transformRec(node, j) {
   if (node.type === 'StringLiteral') {
     return buildGet(node.value, j);
   }
+  if (node.type === 'NumericLiteral') {
+    return node;
+  }
   if (node.type === 'CallExpression') {
     switch (node.callee.name) {
       case 'raw':
@@ -146,6 +149,12 @@ function transformRec(node, j) {
         }
 
         return reduceArgs(j.binaryExpression, binaryOperator, node.arguments, transformRec, j);
+      case 'parseInt':
+      case 'parseFloat':
+        return j.callExpression(
+          j.identifier(node.callee.name),
+          node.arguments.map((arg) => transformRec(arg, j))
+        );
     }
   }
 }
