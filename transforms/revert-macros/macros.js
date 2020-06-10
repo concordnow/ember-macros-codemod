@@ -37,7 +37,7 @@ function transformRec(node, j) {
   if (node.type === 'NumericLiteral') {
     return node;
   }
-  if (node.type === 'CallExpression') {
+  if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
     switch (node.callee.name) {
       case 'raw':
         return node.arguments[0];
@@ -180,9 +180,13 @@ function extractMacroArguments(args) {
     });
 }
 
-function transformMacro(macroId, path, j) {
+function transformMacro(path, j) {
   // ember-macro-helpers
-  if (macroId === 'comp') {
+  if (
+    path.node.value.type === 'CallExpression' &&
+    path.node.value.callee.type === 'Identifier' &&
+    path.node.value.callee.name === 'comp'
+  ) {
     return transformComp(path, j);
   }
 

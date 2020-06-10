@@ -38,7 +38,7 @@ module.exports = function transformer(file, api) {
           },
         })
         .forEach((path) => {
-          transformMacro(val, path, j);
+          transformMacro(path, j);
         })
         .toSource();
     }, file.source);
