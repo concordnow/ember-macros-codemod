@@ -28,6 +28,25 @@ module.exports = function transformer(file, api) {
 
   if (macrosImported.size) {
     let source = [...macrosImported].reduce((source, val) => {
+      if (val === 'string' || val === 'array') {
+        return j(source)
+          .find(j.ObjectProperty, {
+            value: {
+              type: 'CallExpression',
+              callee: {
+                type: 'MemberExpression',
+                object: {
+                  name: val,
+                },
+              },
+            },
+          })
+          .forEach((path) => {
+            transformMacro(path, j);
+          })
+          .toSource();
+      }
+
       return j(source)
         .find(j.ObjectProperty, {
           value: {

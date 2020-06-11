@@ -37,6 +37,12 @@ function transformRec(node, j) {
   if (node.type === 'NumericLiteral') {
     return node;
   }
+  if (node.type === 'ArrowFunctionExpression') {
+    return node;
+  }
+  if (node.type === 'ArrayExpression') {
+    return node;
+  }
   if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
     switch (node.callee.name) {
       case 'raw':
@@ -162,15 +168,98 @@ function transformRec(node, j) {
         );
     }
   }
+
+  if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression') {
+    if (node.callee.object.name === 'array') {
+      switch (node.callee.property.name) {
+        case 'any':
+        case 'compact':
+        case 'concat':
+        case 'every':
+        case 'filterBy':
+        case 'filter':
+        case 'findBy':
+        case 'find':
+        case 'map':
+        case 'mapBy':
+        case 'rejectBy':
+        case 'isAny':
+        case 'isEvery':
+        case 'includes':
+        case 'indexOf':
+        case 'join':
+        case 'reduce':
+        case 'uniq':
+        case 'uniqBy':
+        case 'sort':
+        case 'slice':
+        case 'without':
+        case 'objectAt': {
+          let [firstArg, ...args] = node.arguments;
+          return j.callExpression(
+            j.memberExpression(
+              transformRec(firstArg, j),
+              j.identifier(node.callee.property.name),
+              false
+            ),
+            args.map((arg) => transformRec(arg, j))
+          );
+        }
+        case 'first':
+          return j.memberExpression(transformRec(node.arguments[0], j), j.numericLiteral(0), true);
+        case 'length':
+          return j.memberExpression(
+            transformRec(node.arguments[0], j),
+            j.identifier('length'),
+            false
+          );
+      }
+    }
+    if (node.callee.object.name === 'string') {
+      switch (node.callee.property.name) {
+        case 'filter':
+          debugger;
+      }
+    }
+  }
 }
 
-function extractMacroArguments(args) {
-  return args
-    .map((node) => {
+function extractMacroArguments(macroNode, j) {
+  let shouldAppendBrackets = (index) => {
+    let isArrayMacro =
+      macroNode.type === 'CallExpression' &&
+      macroNode.callee.type === 'MemberExpression' &&
+      macroNode.callee.object.name === 'array';
+    if (isArrayMacro && index === 0) {
+      return true;
+    } else if (isArrayMacro && macroNode.callee.property.name === 'concat' && index === 1) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  let shouldAppendEach = (index) => {
+    return (
+      shouldAppendBrackets(index) &&
+      macroNode.callee.property.name.slice(-2) === 'By' &&
+      macroNode.arguments[1].type === 'CallExpression' &&
+      macroNode.arguments[1].callee.name === 'raw'
+    );
+  };
+
+  return macroNode.arguments
+    .map((node, index) => {
       if (node.type === 'CallExpression' && node.callee.name !== 'raw') {
-        return extractMacroArguments(node.arguments);
+        return extractMacroArguments(node, j);
       }
       if (node.type === 'StringLiteral') {
+        if (shouldAppendEach(index)) {
+          let rawValue = macroNode.arguments[1].arguments[0].value;
+          return j.stringLiteral(`${node.value}.@each.${rawValue}`);
+        }
+        if (shouldAppendBrackets(index)) {
+          return j.stringLiteral(`${node.value}.[]`);
+        }
         return node;
       }
     })
@@ -191,7 +280,7 @@ function transformMacro(path, j) {
   }
 
   // ember-awesome-macros
-  let args = extractMacroArguments(path.node.value.arguments);
+  let args = extractMacroArguments(path.node.value, j);
 
   path.node.value.arguments = [
     ...args,
