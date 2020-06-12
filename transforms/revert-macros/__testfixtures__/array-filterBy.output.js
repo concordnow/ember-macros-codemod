@@ -8,4 +8,10 @@ export default Component.extend({
   prop2: computed("array.@each.test", function () {
     return get(this, "array").filterBy('test');
   }),
+  prop3: computed("array.@each.test", function () {
+    return get(this, "array").filterBy('test', null);
+  }),
+  prop4: computed("array.@each.test", function () {
+    return get(this, "array").filterBy('test', true);
+  }),
 });

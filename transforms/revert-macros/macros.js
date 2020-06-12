@@ -42,13 +42,13 @@ function transformRec(node, j) {
   if (node.type === 'StringLiteral') {
     return buildGet(node.value, j);
   }
-  if (node.type === 'NumericLiteral') {
-    return node;
-  }
-  if (node.type === 'ArrowFunctionExpression') {
-    return node;
-  }
-  if (node.type === 'ArrayExpression') {
+  if ([
+    'NullLiteral',
+    'NumericLiteral',
+    'BooleanLiteral',
+    'ArrowFunctionExpression',
+    'ArrayExpression',
+  ].includes(node.type)) {
     return node;
   }
   if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
