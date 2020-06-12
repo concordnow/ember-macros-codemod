@@ -166,6 +166,25 @@ function transformRec(node, j) {
           j.identifier(node.callee.name),
           node.arguments.map((arg) => transformRec(arg, j))
         );
+
+      // Object
+      case 'isEmpty':
+        return j.callExpression(j.identifier('isEmpty'), [
+          transformRec(node.arguments[0], j),
+        ]);
+      case 'getBy':
+        return j.callExpression(j.identifier('get'), [
+          transformRec(node.arguments[0], j),
+          transformRec(node.arguments[1], j),
+        ]);
+      case 'notEmpty':
+        return j.unaryExpression('!', j.callExpression(j.identifier('isEmpty'), [
+            transformRec(node.arguments[0], j),
+        ]));
+
+      // Array
+      case 'collect':
+        return j.arrayExpression(node.arguments.map(arg => transformRec(arg, j)));
     }
   }
 
