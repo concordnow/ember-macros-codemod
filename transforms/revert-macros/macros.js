@@ -217,8 +217,45 @@ function transformRec(node, j) {
     }
     if (node.callee.object.name === 'string') {
       switch (node.callee.property.name) {
-        case 'filter':
-          debugger;
+        case 'camelize':
+        case 'capitalize':
+        case 'classify':
+        case 'dasherize':
+        case 'decamelize':
+        case 'indexOf':
+        case 'split':
+        case 'substr':
+        case 'substring':
+          let [firstArg, ...args] = node.arguments;
+          return j.callExpression(
+            j.memberExpression(
+              transformRec(firstArg, j),
+              j.identifier(node.callee.property.name),
+              false
+            ),
+            args.map((arg) => transformRec(arg, j))
+          );
+
+        case 'toUpper':
+        case 'toLower':
+          return j.callExpression(
+            j.memberExpression(
+              transformRec(node.arguments[0], j),
+              j.identifier(`${node.callee.property.name}Case`),
+              false
+            ),
+            []
+          );
+        case 'htmlSafe':
+          return j.callExpression(j.identifier('htmlSafe'), [
+            transformRec(node.arguments[0], j),
+          ]);
+        case 'length':
+          return j.memberExpression(
+            transformRec(node.arguments[0], j),
+            j.identifier('length'),
+            false
+          );
       }
     }
   }
