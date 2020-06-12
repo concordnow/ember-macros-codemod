@@ -8,13 +8,13 @@ function addEmberGetImport(fileSource, j) {
   if (emberObjectImport.length) {
     emberObjectImport.forEach((path) => {
       let emberGet = path.node.specifiers.find((specifier) => {
-        return specifier.local.name === 'get';
+        return specifier.local && specifier.local.name === 'get';
       });
       if (!emberGet) {
         path.node.specifiers.push(j.importSpecifier(j.identifier('get')));
       }
       let emberComputed = path.node.specifiers.find((specifier) => {
-        return specifier.local.name === 'computed';
+        return specifier.local && specifier.local.name === 'computed';
       });
       if (!emberComputed) {
         path.node.specifiers.push(j.importSpecifier(j.identifier('computed')));
