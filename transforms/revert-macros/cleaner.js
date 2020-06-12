@@ -11,13 +11,13 @@ function addEmberGetImport(fileSource, j) {
         return specifier.local.name === 'get';
       });
       if (!emberGet) {
-        path.node.specifiers.push(j.importSpecifier(j.indentifier('get')));
+        path.node.specifiers.push(j.importSpecifier(j.identifier('get')));
       }
       let emberComputed = path.node.specifiers.find((specifier) => {
         return specifier.local.name === 'computed';
       });
       if (!emberComputed) {
-        path.node.specifiers.push(j.importSpecifier(j.indentifier('computed')));
+        path.node.specifiers.push(j.importSpecifier(j.identifier('computed')));
       }
     });
   } else {
