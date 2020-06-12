@@ -3,6 +3,14 @@ const { buildDeclare, buildGet } = require('./builder');
 function transformComp(path, j) {
   let arrowFunc = path.node.value.arguments[path.node.value.arguments.length - 1];
 
+  let body;
+
+  if (arrowFunc.body.body) {
+    body = arrowFunc.body.body;
+  } else {
+    body = [j.returnStatement(arrowFunc.body)];
+  }
+
   path.node.value.arguments.splice(
     path.node.value.arguments.length - 1,
     1,
@@ -13,7 +21,7 @@ function transformComp(path, j) {
         ...path.node.value.arguments.slice(0, -1).map((arg, index) => {
           return buildDeclare(arrowFunc.params[index].name, arg.value, j);
         }),
-        ...arrowFunc.body.body,
+        ...body,
       ])
     )
   );

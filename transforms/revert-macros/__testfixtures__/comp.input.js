@@ -35,4 +35,6 @@ export default Component.extend({
     // do something
     return foo;
   }),
+
+  prop9: comp('a', (foo) => foo),
 });
