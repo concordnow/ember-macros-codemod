@@ -27,9 +27,8 @@ function addEmberGetImport(fileSource, j) {
     } else {
       root.get().node.program.body.unshift(emberGetObjectStatement); // begining of file
     }
-    return root.toSource();
   }
-  return fileSource;
+  return root.toSource();
 }
 
 function cleanupMacrosImports(macrosImported, fileSource, j) {
