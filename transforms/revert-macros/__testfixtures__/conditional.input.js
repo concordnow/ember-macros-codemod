@@ -7,4 +7,5 @@ export default Component.extend({
   prop2: conditional('a', raw('b'), 'c'),
   prop3: conditional('a.b.c', 'd.e.f', 'g.h.i'),
   prop4: conditional(gt('a', 'd'), raw('b'), 'c'),
+  prop5: conditional('a', 'b'),
 });

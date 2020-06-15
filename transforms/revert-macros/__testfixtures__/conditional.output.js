@@ -14,4 +14,7 @@ export default Component.extend({
   prop4: computed('a', 'd', 'c', function () {
     return get(this, "a") > get(this, "d") ? 'b' : get(this, "c");
   }),
+  prop5: computed('a', 'b', function () {
+    return get(this, "a") ? get(this, "b") : undefined;
+  }),
 });

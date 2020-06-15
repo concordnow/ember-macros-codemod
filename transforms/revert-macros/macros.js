@@ -62,7 +62,11 @@ function transformRec(node, j) {
       case 'bool':
         return j.unaryExpression('!', j.unaryExpression('!', transformRec(node.arguments[0], j)));
       case 'conditional':
-        return j.conditionalExpression(...node.arguments.map((arg) => transformRec(arg, j)));
+        if (node.arguments.length === 2) {
+          return j.conditionalExpression(...node.arguments.map((arg) => transformRec(arg, j)), j.identifier('undefined'));
+        } else {
+          return j.conditionalExpression(...node.arguments.map((arg) => transformRec(arg, j)));
+        }
       case 'defaultTrue':
         console.error('TODO');
         return;
