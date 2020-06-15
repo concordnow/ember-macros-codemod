@@ -68,8 +68,7 @@ function transformRec(node, j) {
           return j.conditionalExpression(...node.arguments.map((arg) => transformRec(arg, j)));
         }
       case 'defaultTrue':
-        console.error('TODO');
-        return;
+        throw new Error('Unsupported macro');
       case 'nand':
         return j.unaryExpression(
           '!',
@@ -91,11 +90,8 @@ function transformRec(node, j) {
           })
         );
       case 'xnor':
-        console.error('TODO');
-        return;
       case 'xor':
-        console.error('TODO');
-        return;
+        throw new Error('Unsupported macro');
 
       // Comparison
       case 'eq':
@@ -146,8 +142,7 @@ function transformRec(node, j) {
           transformRec(node.arguments[1], j)
         );
       case 'instanceOf':
-        console.error('TODO');
-        return;
+        throw new Error('Unsupported macro');
 
       // Number
       case 'add':
