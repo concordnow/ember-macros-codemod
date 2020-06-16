@@ -54,4 +54,7 @@ export default Component.extend({
     let foo = get(this, "a");
     return foo;
   }),
+  prop10: computed(function () {
+    return foo();
+  }),
 });
