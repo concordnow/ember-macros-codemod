@@ -11,4 +11,10 @@ export default Component.extend({
   prop3: computed('a', 'b', 'd', function () {
     return get(this, "a") > get(this, "b") === 'c' && get(this, "a") > get(this, "b") === get(this, "d");
   }),
+  prop4: computed('a', function () {
+    return get(this, "a") === 4;
+  }),
+  prop5: computed('a', function () {
+    return get(this, "a") === -1;
+  }),
 });

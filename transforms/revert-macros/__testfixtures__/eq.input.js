@@ -6,4 +6,6 @@ export default Component.extend({
   prop1: eq('a', 'b'),
   prop2: eq('a', 'b', 'c'),
   prop3: eq(gt('a', 'b'), raw('c'), 'd'),
+  prop4: eq('a', 4),
+  prop5: eq('a', -1),
 });

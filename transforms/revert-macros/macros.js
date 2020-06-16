@@ -46,6 +46,7 @@ function transformRec(node, j) {
     'NullLiteral',
     'NumericLiteral',
     'BooleanLiteral',
+    'UnaryExpression',
     'ArrowFunctionExpression',
     'ArrayExpression',
   ].includes(node.type)) {
