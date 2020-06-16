@@ -221,6 +221,7 @@ function transformRec(node, j) {
         case 'sort':
         case 'slice':
         case 'without':
+        case 'reverse':
         case 'objectAt': {
           let [firstArg, ...args] = node.arguments;
           return j.callExpression(
