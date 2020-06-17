@@ -11,6 +11,19 @@ function transformComp(path, j) {
     body = [j.returnStatement(arrowFunc.body)];
   }
 
+  let declarations = [];
+
+  path.node.value.arguments.slice(0, -1).forEach((arg, index) => {
+    if (arg.value.includes('.{')) {
+      let prefix = arg.value.split('.{')[0];
+      declarations = declarations.concat(
+        arg.value.match(/\.\{(.*)\}/)[1].split(',').map(i => `${prefix}.${i}`)
+      );
+    } else {
+      declarations.push(arg.value);
+    }
+  });
+
   path.node.value.arguments.splice(
     path.node.value.arguments.length - 1,
     1,
@@ -18,8 +31,8 @@ function transformComp(path, j) {
       j.identifier(''),
       [],
       j.blockStatement([
-        ...path.node.value.arguments.slice(0, -1).map((arg, index) => {
-          return buildDeclare(arrowFunc.params[index].name, arg.value, j);
+        ...declarations.map((arg, index) => {
+          return buildDeclare(arrowFunc.params[index].name, arg, j);
         }),
         ...body,
       ])

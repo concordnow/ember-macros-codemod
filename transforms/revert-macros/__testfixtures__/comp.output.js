@@ -57,4 +57,14 @@ export default Component.extend({
   prop10: computed(function () {
     return foo();
   }),
+
+  prop11: computed('a.{b,c}', 'd.e.{f}', 'g.h.{i,j,k}', function () {
+    let b = get(this, "a.b");
+    let c = get(this, "a.c");
+    let f = get(this, "d.e.f");
+    let i = get(this, "g.h.i");
+    let j = get(this, "g.h.j");
+    let k = get(this, "g.h.k");
+    return b + c + f + i + j + k;
+  })
 });

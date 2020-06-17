@@ -38,4 +38,8 @@ export default Component.extend({
 
   prop9: comp('a', (foo) => foo),
   prop10: comp(() => foo()),
+
+  prop11: comp('a.{b,c}', 'd.e.{f}', 'g.h.{i,j,k}', (b, c, f, i, j, k) => {
+    return b + c + f + i + j + k;
+  })
 });
