@@ -82,6 +82,7 @@ ember-macros-codemod revert-macros path/of/files/ or/some**/*glob.js
 * [string-substring](#string-substring)
 * [string-toLower](#string-toLower)
 * [string-toUpper](#string-toUpper)
+* [tag](#tag)
 * [unless](#unless)
 <!--FIXTURES_TOC_END-->
 
@@ -1098,6 +1099,10 @@ export default Component.extend({
 
   prop9: comp('a', (foo) => foo),
   prop10: comp(() => foo()),
+
+  prop11: comp('a.{b,c}', 'd.e.{f}', 'g.h.{i,j,k}', (b, c, f, i, j, k) => {
+    return b + c + f + i + j + k;
+  })
 });
 
 ```
@@ -1163,6 +1168,16 @@ export default Component.extend({
   prop10: computed(function () {
     return foo();
   }),
+
+  prop11: computed('a.{b,c}', 'd.e.{f}', 'g.h.{i,j,k}', function () {
+    let b = get(this, "a.b");
+    let c = get(this, "a.c");
+    let f = get(this, "d.e.f");
+    let i = get(this, "g.h.i");
+    let j = get(this, "g.h.j");
+    let k = get(this, "g.h.k");
+    return b + c + f + i + j + k;
+  })
 });
 
 ```
@@ -1181,6 +1196,7 @@ export default Component.extend({
   prop3: conditional('a.b.c', 'd.e.f', 'g.h.i'),
   prop4: conditional(gt('a', 'd'), raw('b'), 'c'),
   prop5: conditional('a', 'b'),
+  prop6: conditional('a', 'a', 'c'),
 });
 
 ```
@@ -1205,6 +1221,9 @@ export default Component.extend({
   }),
   prop5: computed('a', 'b', function () {
     return get(this, "a") ? get(this, "b") : undefined;
+  }),
+  prop6: computed('a', 'c', function () {
+    return get(this, "a") ? get(this, "a") : get(this, "c");
   }),
 });
 
@@ -2233,6 +2252,56 @@ export default Component.extend({
   }),
   prop2: computed("array.[]", function () {
     return get(this, "array").join().toUpperCase();
+  }),
+});
+
+```
+---
+<a id="tag">**tag**</a>
+
+**Input** (<small>[tag.input.js](transforms/revert-macros/__testfixtures__/tag.input.js)</small>):
+```js
+import Component from '@ember/component';
+import { tag, string } from 'ember-awesome-macros';
+
+export default Component.extend({
+  prop1: tag`${'a'}`,
+  prop2: tag`foo${'a'}`,
+  prop3: tag`foo${'a'}bar`,
+  prop4: tag`foo${'a'}bar${'b'}`,
+  prop5: tag`foo${'a'}bar${'a'}`,
+  prop6: tag`one ${string.toUpper('source')} three`,
+  prop7: string.toUpper(tag`one ${'source'} three`),
+});
+
+```
+
+**Output** (<small>[tag.output.js](transforms/revert-macros/__testfixtures__/tag.output.js)</small>):
+```js
+import { computed, get } from '@ember/object';
+import Component from '@ember/component';
+
+export default Component.extend({
+  prop1: computed('a', function () {
+    return `${get(this, "a")}`;
+  }),
+  prop2: computed('a', function () {
+    return `foo${get(this, "a")}`;
+  }),
+  prop3: computed('a', function () {
+    return `foo${get(this, "a")}bar`;
+  }),
+  prop4: computed('a', 'b', function () {
+    return `foo${get(this, "a")}bar${get(this, "b")}`;
+  }),
+  prop5: computed('a', function () {
+    return `foo${get(this, "a")}bar${get(this, "a")}`;
+  }),
+  prop6: computed('source', function () {
+    return `one ${get(this, "source").toUpperCase()} three`;
+  }),
+  prop7: computed('source', function () {
+    return `one ${get(this, "source")} three`.toUpperCase();
   }),
 });
 
