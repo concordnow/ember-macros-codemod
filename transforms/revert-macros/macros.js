@@ -325,7 +325,7 @@ function extractMacroArguments(macroNode, j) {
     );
   };
 
-  return macroNode.arguments
+  let args = macroNode.arguments
     .map((node, index) => {
       if (node.type === 'CallExpression' && node.callee.name !== 'raw') {
         return extractMacroArguments(node, j);
@@ -345,6 +345,11 @@ function extractMacroArguments(macroNode, j) {
     .filter(function (el) {
       return el != null;
     });
+
+  let argsValues = args.map(item => item.value);
+
+  return args
+    .filter((item, index) => argsValues.indexOf(item.value) === index);
 }
 
 function transformMacro(path, j) {

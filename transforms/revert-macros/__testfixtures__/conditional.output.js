@@ -17,4 +17,7 @@ export default Component.extend({
   prop5: computed('a', 'b', function () {
     return get(this, "a") ? get(this, "b") : undefined;
   }),
+  prop6: computed('a', 'c', function () {
+    return get(this, "a") ? get(this, "a") : get(this, "c");
+  }),
 });
