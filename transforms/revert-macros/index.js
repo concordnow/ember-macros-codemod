@@ -28,6 +28,23 @@ module.exports = function transformer(file, api) {
 
   if (macrosImported.size) {
     let source = [...macrosImported].reduce((source, val) => {
+      if (val === 'tag') {
+        return j(source)
+          .find(j.ObjectProperty, {
+            value: {
+              type: 'TaggedTemplateExpression',
+              tag: {
+                type: 'Identifier',
+                name: val
+              },
+            },
+          })
+          .forEach((path) => {
+            transformMacro(path, j);
+          })
+          .toSource();
+      }
+
       if (val === 'string' || val === 'array') {
         return j(source)
           .find(j.ObjectProperty, {

@@ -300,9 +300,19 @@ function transformRec(node, j) {
       }
     }
   }
+
+  if (node.type === 'TaggedTemplateExpression' && node.tag.name === 'tag') {
+    return j.templateLiteral(node.quasi.quasis, node.quasi.expressions.map(arg => transformRec(arg, j)));
+  }
 }
 
 function extractMacroArguments(macroNode, j) {
+  let args = macroNode.arguments;
+
+  if (macroNode.type === 'TaggedTemplateExpression' && macroNode.tag.name === 'tag') {
+    args = macroNode.quasi.expressions;
+  }
+
   let shouldAppendBrackets = (index) => {
     let isArrayMacro =
       macroNode.type === 'CallExpression' &&
@@ -325,9 +335,12 @@ function extractMacroArguments(macroNode, j) {
     );
   };
 
-  let args = macroNode.arguments
+  args = args
     .map((node, index) => {
       if (node.type === 'CallExpression' && node.callee.name !== 'raw') {
+        return extractMacroArguments(node, j);
+      }
+      if (node.type === 'TaggedTemplateExpression' && node.tag.name === 'tag') {
         return extractMacroArguments(node, j);
       }
       if (node.type === 'StringLiteral') {
@@ -365,7 +378,7 @@ function transformMacro(path, j) {
   // ember-awesome-macros
   let args = extractMacroArguments(path.node.value, j);
 
-  path.node.value.arguments = [
+  args = [
     ...args,
     j.functionDeclaration(
       j.identifier(''),
@@ -374,6 +387,11 @@ function transformMacro(path, j) {
     ),
   ];
 
+  if (path.node.value.type === 'TaggedTemplateExpression' && path.node.value.tag.name === 'tag') {
+    path.node.value = j.callExpression(j.identifier('computed'), []);
+  }
+
+  path.node.value.arguments = args;
   path.node.value.callee = j.identifier('computed');
 }
 

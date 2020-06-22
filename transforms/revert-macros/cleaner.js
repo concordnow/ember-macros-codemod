@@ -35,14 +35,29 @@ function cleanupMacrosImports(macrosImported, fileSource, j) {
   let root = j(fileSource);
 
   macrosImported.forEach((val) => {
-    let calls = root.find(j.ObjectProperty, {
-      value: {
-        type: 'CallExpression',
-        callee: {
-          name: val,
+    let calls = [];
+
+    if (val === 'tag') {
+      calls = root.find(j.ObjectProperty, {
+        value: {
+          type: 'TaggedTemplateExpression',
+          tag: {
+            type: 'Identifier',
+            name: val
+          },
         },
-      },
-    });
+      });
+    } else {
+      calls = root.find(j.ObjectProperty, {
+        value: {
+          type: 'CallExpression',
+          callee: {
+            name: val,
+          },
+        },
+      });
+    }
+
 
     if (calls.length === 0) {
       root
