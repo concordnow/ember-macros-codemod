@@ -35,7 +35,7 @@ module.exports = function transformer(file, api) {
               type: 'TaggedTemplateExpression',
               tag: {
                 type: 'Identifier',
-                name: val
+                name: val,
               },
             },
           })

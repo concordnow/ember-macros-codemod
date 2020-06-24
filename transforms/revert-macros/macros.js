@@ -13,11 +13,14 @@ function transformComp(path, j) {
 
   let declarations = [];
 
-  path.node.value.arguments.slice(0, -1).forEach((arg, index) => {
+  path.node.value.arguments.slice(0, -1).forEach((arg) => {
     if (arg.value.includes('.{')) {
       let prefix = arg.value.split('.{')[0];
       declarations = declarations.concat(
-        arg.value.match(/\.\{(.*)\}/)[1].split(',').map(i => `${prefix}.${i}`)
+        arg.value
+          .match(/\.\{(.*)\}/)[1]
+          .split(',')
+          .map((i) => `${prefix}.${i}`)
       );
     } else {
       declarations.push(arg.value);
@@ -55,14 +58,16 @@ function transformRec(node, j) {
   if (node.type === 'StringLiteral') {
     return buildGet(node.value, j);
   }
-  if ([
-    'NullLiteral',
-    'NumericLiteral',
-    'BooleanLiteral',
-    'UnaryExpression',
-    'ArrowFunctionExpression',
-    'ArrayExpression',
-  ].includes(node.type)) {
+  if (
+    [
+      'NullLiteral',
+      'NumericLiteral',
+      'BooleanLiteral',
+      'UnaryExpression',
+      'ArrowFunctionExpression',
+      'ArrayExpression',
+    ].includes(node.type)
+  ) {
     return node;
   }
   if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
@@ -77,7 +82,10 @@ function transformRec(node, j) {
         return j.unaryExpression('!', j.unaryExpression('!', transformRec(node.arguments[0], j)));
       case 'conditional':
         if (node.arguments.length === 2) {
-          return j.conditionalExpression(...node.arguments.map((arg) => transformRec(arg, j)), j.identifier('undefined'));
+          return j.conditionalExpression(
+            ...node.arguments.map((arg) => transformRec(arg, j)),
+            j.identifier('undefined')
+          );
         } else {
           return j.conditionalExpression(...node.arguments.map((arg) => transformRec(arg, j)));
         }
@@ -190,22 +198,21 @@ function transformRec(node, j) {
 
       // Object
       case 'isEmpty':
-        return j.callExpression(j.identifier('isEmpty'), [
-          transformRec(node.arguments[0], j),
-        ]);
+        return j.callExpression(j.identifier('isEmpty'), [transformRec(node.arguments[0], j)]);
       case 'getBy':
         return j.callExpression(j.identifier('get'), [
           transformRec(node.arguments[0], j),
           transformRec(node.arguments[1], j),
         ]);
       case 'notEmpty':
-        return j.unaryExpression('!', j.callExpression(j.identifier('isEmpty'), [
-            transformRec(node.arguments[0], j),
-        ]));
+        return j.unaryExpression(
+          '!',
+          j.callExpression(j.identifier('isEmpty'), [transformRec(node.arguments[0], j)])
+        );
 
       // Array
       case 'collect':
-        return j.arrayExpression(node.arguments.map(arg => transformRec(arg, j)));
+        return j.arrayExpression(node.arguments.map((arg) => transformRec(arg, j)));
     }
   }
 
@@ -266,7 +273,7 @@ function transformRec(node, j) {
         case 'indexOf':
         case 'split':
         case 'substr':
-        case 'substring':
+        case 'substring': {
           let [firstArg, ...args] = node.arguments;
           return j.callExpression(
             j.memberExpression(
@@ -276,6 +283,7 @@ function transformRec(node, j) {
             ),
             args.map((arg) => transformRec(arg, j))
           );
+        }
 
         case 'toUpper':
         case 'toLower':
@@ -288,9 +296,7 @@ function transformRec(node, j) {
             []
           );
         case 'htmlSafe':
-          return j.callExpression(j.identifier('htmlSafe'), [
-            transformRec(node.arguments[0], j),
-          ]);
+          return j.callExpression(j.identifier('htmlSafe'), [transformRec(node.arguments[0], j)]);
         case 'length':
           return j.memberExpression(
             transformRec(node.arguments[0], j),
@@ -302,7 +308,10 @@ function transformRec(node, j) {
   }
 
   if (node.type === 'TaggedTemplateExpression' && node.tag.name === 'tag') {
-    return j.templateLiteral(node.quasi.quasis, node.quasi.expressions.map(arg => transformRec(arg, j)));
+    return j.templateLiteral(
+      node.quasi.quasis,
+      node.quasi.expressions.map((arg) => transformRec(arg, j))
+    );
   }
 }
 
@@ -359,10 +368,9 @@ function extractMacroArguments(macroNode, j) {
       return el != null;
     });
 
-  let argsValues = args.map(item => item.value);
+  let argsValues = args.map((item) => item.value);
 
-  return args
-    .filter((item, index) => argsValues.indexOf(item.value) === index);
+  return args.filter((item, index) => argsValues.indexOf(item.value) === index);
 }
 
 function transformMacro(path, j) {

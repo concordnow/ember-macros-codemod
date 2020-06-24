@@ -43,7 +43,7 @@ function cleanupMacrosImports(macrosImported, fileSource, j) {
           type: 'TaggedTemplateExpression',
           tag: {
             type: 'Identifier',
-            name: val
+            name: val,
           },
         },
       });
@@ -57,7 +57,6 @@ function cleanupMacrosImports(macrosImported, fileSource, j) {
         },
       });
     }
-
 
     if (calls.length === 0) {
       root
