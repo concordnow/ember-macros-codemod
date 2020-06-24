@@ -338,7 +338,9 @@ function extractMacroArguments(macroNode, j) {
   let shouldAppendEach = (index) => {
     return (
       shouldAppendBrackets(index) &&
-      macroNode.callee.property.name.slice(-2) === 'By' &&
+      (macroNode.callee.property.name.slice(-2) === 'By' ||
+        macroNode.callee.property.name === 'isAny' ||
+        macroNode.callee.property.name === 'isEvery') &&
       macroNode.arguments[1].type === 'CallExpression' &&
       macroNode.arguments[1].callee.name === 'raw'
     );
