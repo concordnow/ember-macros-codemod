@@ -1,6 +1,7 @@
 {
   "name": "ember-macros-codemod",
   "version": "0.1.0",
+  "description": "A collection of codemod's for macros.",
   "scripts": {
     "lint": "eslint --cache .",
     "test": "codemod-cli test",
@@ -18,6 +19,9 @@
     "ember-macro-helpers",
     "ember-awesome-macros"
   ],
+  "repository": "https://github.com/concordnow/ember-macros-codemod",
+  "license": "MIT",
+  "author": "Concord Worlwide Inc.",
   "dependencies": {
     "codemod-cli": "^2.1.0"
   },
