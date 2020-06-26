@@ -10,7 +10,13 @@
   },
   "bin": "./bin/cli.js",
   "keywords": [
-    "codemod-cli"
+    "codemod-cli",
+    "codemod",
+    "ember",
+    "octane",
+    "macros",
+    "ember-macro-helpers",
+    "ember-awesome-macros"
   ],
   "dependencies": {
     "codemod-cli": "^2.1.0"
