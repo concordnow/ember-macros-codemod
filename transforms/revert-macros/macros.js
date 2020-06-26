@@ -376,7 +376,7 @@ function extractMacroArguments(macroNode, j) {
       if (node.type === 'StringLiteral') {
         if (shouldAppendEach(index)) {
           let rawValue = macroNode.arguments[1].arguments[0].value;
-          return j.stringLiteral(`${node.value}.@each.${rawValue}`);
+          return j.stringLiteral(`${node.value}.@each.${rawValue.split('.')[0]}`);
         }
         if (shouldAppendBrackets(index)) {
           return j.stringLiteral(`${node.value}.[]`);
