@@ -90,8 +90,6 @@ function transformRec(node, j) {
         } else {
           return j.conditionalExpression(...node.arguments.map((arg) => transformRec(arg, j)));
         }
-      case 'defaultTrue':
-        throw new Error('Unsupported macro');
       case 'nand':
         return j.unaryExpression(
           '!',
@@ -112,9 +110,6 @@ function transformRec(node, j) {
             return i === 0 ? j.unaryExpression('!', transformRec(arg, j)) : transformRec(arg, j);
           })
         );
-      case 'xnor':
-      case 'xor':
-        throw new Error('Unsupported macro');
 
       // Comparison
       case 'eq':
@@ -164,8 +159,6 @@ function transformRec(node, j) {
           transformRec(node.arguments[0], j),
           transformRec(node.arguments[1], j)
         );
-      case 'instanceOf':
-        throw new Error('Unsupported macro');
 
       // Number
       case 'add':
@@ -214,6 +207,9 @@ function transformRec(node, j) {
       // Array
       case 'collect':
         return j.arrayExpression(node.arguments.map((arg) => transformRec(arg, j)));
+
+      default:
+        throw new Error(`Unsupported macro "${node.callee.name}"`);
     }
   }
 
@@ -271,6 +267,8 @@ function transformRec(node, j) {
 
           return j.memberExpression(firstMember, j.identifier('length'), false);
         }
+        default:
+          throw new Error(`Unsupported macro "${node.callee.property.name}"`);
       }
     }
     if (node.callee.object.name === 'string') {
@@ -322,6 +320,8 @@ function transformRec(node, j) {
 
           return j.memberExpression(firstMember, j.identifier('length'), false);
         }
+        default:
+          throw new Error(`Unsupported macro "${node.callee.property.name}"`);
       }
     }
   }
@@ -332,6 +332,8 @@ function transformRec(node, j) {
       node.quasi.expressions.map((arg) => transformRec(arg, j))
     );
   }
+
+  throw new Error('Unsupported node', node);
 }
 
 function extractMacroArguments(macroNode, j) {
