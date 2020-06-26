@@ -1,5 +1,12 @@
 # revert-macros
 
+A codemod for turning macros from [ember-awesome-macros](https://github.com/kellyselden/ember-awesome-macros) & [ember-macro-helpers](https://github.com/kellyselden/ember-macro-helpers) into simple computed properties.
+
+Currently ember-macro-helpers isn't fully compatible with Ember Octane ([ember-macro-helpers#291](https://github.com/kellyselden/ember-macro-helpers/issues/291)). In addition, Glimmer tracked properties mitigate the need for those addons. If you heavily rely on those addons and want to follow Ember upgrades, this addon is for you!
+
+| Option           | Value   | Default | Details |
+| --- | --- | --- | --- |
+| `--with-fallbacks` | boolean | `false` | Some macros come with default values (eg. filterBy default to `[]`) if the computed key is `undefined`. This option will keep the fallback behavior to avoid exceptions on async properties |
 
 ## Usage
 
