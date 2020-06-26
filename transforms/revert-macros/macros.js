@@ -1,4 +1,5 @@
 const { buildDeclare, buildGet } = require('./builder');
+const { getOptions } = require('codemod-cli');
 
 function transformComp(path, j) {
   let arrowFunc = path.node.value.arguments[path.node.value.arguments.length - 1];
@@ -244,23 +245,32 @@ function transformRec(node, j) {
         case 'reverse':
         case 'objectAt': {
           let [firstArg, ...args] = node.arguments;
+          const options = getOptions();
+          let firstMember = options.withFallbacks
+            ? j.logicalExpression('||', transformRec(firstArg, j), j.arrayExpression([]))
+            : transformRec(firstArg, j);
+
           return j.callExpression(
-            j.memberExpression(
-              transformRec(firstArg, j),
-              j.identifier(node.callee.property.name),
-              false
-            ),
+            j.memberExpression(firstMember, j.identifier(node.callee.property.name), false),
             args.map((arg) => transformRec(arg, j))
           );
         }
-        case 'first':
-          return j.memberExpression(transformRec(node.arguments[0], j), j.numericLiteral(0), true);
-        case 'length':
-          return j.memberExpression(
-            transformRec(node.arguments[0], j),
-            j.identifier('length'),
-            false
-          );
+        case 'first': {
+          const options = getOptions();
+          let firstMember = options.withFallbacks
+            ? j.logicalExpression('||', transformRec(node.arguments[0], j), j.arrayExpression([]))
+            : transformRec(node.arguments[0], j);
+
+          return j.memberExpression(firstMember, j.numericLiteral(0), true);
+        }
+        case 'length': {
+          const options = getOptions();
+          let firstMember = options.withFallbacks
+            ? j.logicalExpression('||', transformRec(node.arguments[0], j), j.arrayExpression([]))
+            : transformRec(node.arguments[0], j);
+
+          return j.memberExpression(firstMember, j.identifier('length'), false);
+        }
       }
     }
     if (node.callee.object.name === 'string') {
@@ -275,34 +285,43 @@ function transformRec(node, j) {
         case 'substr':
         case 'substring': {
           let [firstArg, ...args] = node.arguments;
+          const options = getOptions();
+          let firstMember = options.withFallbacks
+            ? j.logicalExpression('||', transformRec(firstArg, j), j.stringLiteral(''))
+            : transformRec(firstArg, j);
+
           return j.callExpression(
-            j.memberExpression(
-              transformRec(firstArg, j),
-              j.identifier(node.callee.property.name),
-              false
-            ),
+            j.memberExpression(firstMember, j.identifier(node.callee.property.name), false),
             args.map((arg) => transformRec(arg, j))
           );
         }
 
         case 'toUpper':
-        case 'toLower':
+        case 'toLower': {
+          const options = getOptions();
+          let firstMember = options.withFallbacks
+            ? j.logicalExpression('||', transformRec(node.arguments[0], j), j.stringLiteral(''))
+            : transformRec(node.arguments[0], j);
+
           return j.callExpression(
             j.memberExpression(
-              transformRec(node.arguments[0], j),
+              firstMember,
               j.identifier(`${node.callee.property.name}Case`),
               false
             ),
             []
           );
+        }
         case 'htmlSafe':
           return j.callExpression(j.identifier('htmlSafe'), [transformRec(node.arguments[0], j)]);
-        case 'length':
-          return j.memberExpression(
-            transformRec(node.arguments[0], j),
-            j.identifier('length'),
-            false
-          );
+        case 'length': {
+          const options = getOptions();
+          let firstMember = options.withFallbacks
+            ? j.logicalExpression('||', transformRec(node.arguments[0], j), j.stringLiteral(''))
+            : transformRec(node.arguments[0], j);
+
+          return j.memberExpression(firstMember, j.identifier('length'), false);
+        }
       }
     }
   }
