@@ -8,6 +8,10 @@ Currently ember-macro-helpers isn't fully compatible with Ember Octane ([ember-m
 | --- | --- | --- | --- |
 | `--with-fallbacks` | boolean | `false` | Some macros come with default values (eg. filterBy default to `[]`) if the computed key is `undefined`. This option will keep the fallback behavior to avoid exceptions on async properties |
 
+## Requirements
+
+- Node.js > 11
+
 ## Usage
 
 ```
