@@ -164,7 +164,7 @@ function transformRec(node, j) {
       case 'add':
       case 'sum':
       case 'difference':
-      case 'substract':
+      case 'subtract':
       case 'multiply':
       case 'product':
       case 'divide':
@@ -172,7 +172,7 @@ function transformRec(node, j) {
         if (node.callee.name === 'add' || node.callee.name === 'sum') {
           binaryOperator = '+';
         }
-        if (node.callee.name === 'difference' || node.callee.name === 'substract') {
+        if (node.callee.name === 'difference' || node.callee.name === 'subtract') {
           binaryOperator = '-';
         }
         if (node.callee.name === 'multiply' || node.callee.name === 'product') {
@@ -333,6 +333,7 @@ function transformRec(node, j) {
     );
   }
 
+  return node;
   throw new Error('Unsupported node', node);
 }
 
